@@ -75,8 +75,8 @@ namespace liblib_backend
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseMvcWithDefaultRoute();
             app.UseAuthentication();
+            app.UseMvc();
         }
     }
 }
