@@ -23,6 +23,13 @@ namespace liblib_backend.Controllers.UserController
         [HttpPost]
         public ResultDTO Login([FromBody] UserDTO user)
         {
+            if (user == null)
+            {
+                return new ResultDTO() {
+                    Success = false,
+                    Message = "Thông tin định dạng sai" 
+                };
+            }
             return userService.Login(user.Username, user.Password);
         }
 
@@ -40,7 +47,6 @@ namespace liblib_backend.Controllers.UserController
         {
             return userService.Create(user.Username, user.Password);
         }
-
-       
+        
     }
 }

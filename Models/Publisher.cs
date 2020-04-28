@@ -7,12 +7,12 @@ namespace liblib_backend.Models
     {
         public Publisher()
         {
-            BookPublisher = new HashSet<BookPublisher>();
+            Book = new HashSet<Book>();
         }
 
         public Guid Id { get; set; }
         public string Name { get; set; }
 
-        public virtual ICollection<BookPublisher> BookPublisher { get; set; }
+        public virtual ICollection<Book> Book { get; set; }
     }
 }

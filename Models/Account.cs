@@ -10,6 +10,7 @@ namespace liblib_backend.Models
             BookLending = new HashSet<BookLending>();
             BookReservation = new HashSet<BookReservation>();
             Log = new HashSet<Log>();
+            Rating = new HashSet<Rating>();
         }
 
         public Guid Id { get; set; }
@@ -19,9 +20,11 @@ namespace liblib_backend.Models
         public int? DateModified { get; set; }
         public string Role { get; set; }
         public bool IsActive { get; set; }
+        public string Image { get; set; }
 
         public virtual ICollection<BookLending> BookLending { get; set; }
         public virtual ICollection<BookReservation> BookReservation { get; set; }
         public virtual ICollection<Log> Log { get; set; }
+        public virtual ICollection<Rating> Rating { get; set; }
     }
 }

@@ -11,6 +11,7 @@ namespace liblib_backend.Repositories
     public interface IUserRepository : ITransientService
     {
         Account GetAccountWithUsername(string username);
+        Account GetAccountWithId(Guid accountId);
         bool CreateAccount(Account account);
     }
 
@@ -35,6 +36,11 @@ namespace liblib_backend.Repositories
             {
                return false;
             }
+        }
+
+        public Account GetAccountWithId(Guid accountId)
+        {
+            return DbContext.Account.FirstOrDefault(x => x.Id == accountId);
         }
 
         public Account GetAccountWithUsername(string username)

@@ -65,7 +65,7 @@ namespace liblib_backend.Services
         }
 
 
-        public ResultDTO Create(string username, string password)
+        public ResultDTO Register(string username, string password)
         {
             if (userRepository.GetAccountWithUsername(username) != null)
             {
@@ -83,6 +83,7 @@ namespace liblib_backend.Services
                 Password = password,
                 DateCreated = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 IsActive = false,
+                Image = "https://user-images.githubusercontent.com/30195/34457818-8f7d8c76-ed82-11e7-8474-3825118a776d.png",
                 Role = "Member"
             };
 
@@ -102,7 +103,7 @@ namespace liblib_backend.Services
             };
         }
 
-        public ResultDTO Register(string username, string password)
+        public ResultDTO Create(string username, string password)
         {
             if (userRepository.GetAccountWithUsername(username) != null)
             {
@@ -120,6 +121,7 @@ namespace liblib_backend.Services
                 Password = password,
                 DateCreated = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 IsActive = true,
+                Image = "https://user-images.githubusercontent.com/30195/34457818-8f7d8c76-ed82-11e7-8474-3825118a776d.png",
                 Role = "Librarian"
             };
 

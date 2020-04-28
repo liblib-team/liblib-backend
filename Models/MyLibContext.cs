@@ -20,13 +20,13 @@ namespace liblib_backend.Models
         public virtual DbSet<Book> Book { get; set; }
         public virtual DbSet<BookAuthor> BookAuthor { get; set; }
         public virtual DbSet<BookLending> BookLending { get; set; }
-        public virtual DbSet<BookPublisher> BookPublisher { get; set; }
         public virtual DbSet<BookReservation> BookReservation { get; set; }
         public virtual DbSet<BookSubject> BookSubject { get; set; }
         public virtual DbSet<Ebook> Ebook { get; set; }
         public virtual DbSet<Hardbook> Hardbook { get; set; }
         public virtual DbSet<Log> Log { get; set; }
         public virtual DbSet<Publisher> Publisher { get; set; }
+        public virtual DbSet<Rating> Rating { get; set; }
         public virtual DbSet<Subject> Subject { get; set; }
 
 
@@ -38,11 +38,15 @@ namespace liblib_backend.Models
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
+                entity.Property(e => e.Image).IsRequired();
+
                 entity.Property(e => e.Password)
                     .IsRequired()
                     .HasMaxLength(64);
 
-                entity.Property(e => e.Role).HasMaxLength(50);
+                entity.Property(e => e.Role)
+                    .IsRequired()
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.Username)
                     .IsRequired()
@@ -60,11 +64,18 @@ namespace liblib_backend.Models
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
+                entity.Property(e => e.Image).IsRequired();
+
                 entity.Property(e => e.Language)
                     .IsRequired()
                     .HasMaxLength(20);
 
                 entity.Property(e => e.Title).IsRequired();
+
+                entity.HasOne(d => d.Publisher)
+                    .WithMany(p => p.Book)
+                    .HasForeignKey(d => d.PublisherId)
+                    .HasConstraintName("FK_Book_Publisher");
             });
 
             modelBuilder.Entity<BookAuthor>(entity =>
@@ -102,25 +113,6 @@ namespace liblib_backend.Models
                     .HasForeignKey(d => d.HardbookId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_BookLending_Hardbook");
-            });
-
-            modelBuilder.Entity<BookPublisher>(entity =>
-            {
-                entity.HasKey(e => new { e.BookId, e.PublisherId });
-
-                entity.ToTable("Book_Publisher");
-
-                entity.HasOne(d => d.Book)
-                    .WithMany(p => p.BookPublisher)
-                    .HasForeignKey(d => d.BookId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Book_Publisher_Book");
-
-                entity.HasOne(d => d.Publisher)
-                    .WithMany(p => p.BookPublisher)
-                    .HasForeignKey(d => d.PublisherId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Book_Publisher_Publisher");
             });
 
             modelBuilder.Entity<BookReservation>(entity =>
@@ -213,6 +205,23 @@ namespace liblib_backend.Models
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<Rating>(entity =>
+            {
+                entity.HasKey(e => new { e.AccountId, e.BookId });
+
+                entity.HasOne(d => d.Account)
+                    .WithMany(p => p.Rating)
+                    .HasForeignKey(d => d.AccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Rating_Account");
+
+                entity.HasOne(d => d.Book)
+                    .WithMany(p => p.Rating)
+                    .HasForeignKey(d => d.BookId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Rating_Book");
             });
 
             modelBuilder.Entity<Subject>(entity =>
