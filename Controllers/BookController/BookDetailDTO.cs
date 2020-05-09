@@ -20,6 +20,8 @@ namespace liblib_backend.Controllers.BookController
 
         public double Point;
 
+        public string Language;
+
         public List<AuthorDTO> Authors;
 
         public List<SubjectDTO> Subjects;

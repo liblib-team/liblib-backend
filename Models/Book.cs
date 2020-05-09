@@ -18,7 +18,6 @@ namespace liblib_backend.Models
         public string Title { get; set; }
         public string Language { get; set; }
         public string Description { get; set; }
-        public int NumberOfReservation { get; set; }
         public int Views { get; set; }
         public int NumberOfRating { get; set; }
         public double Point { get; set; }

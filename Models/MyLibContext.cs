@@ -29,7 +29,6 @@ namespace liblib_backend.Models
         public virtual DbSet<Rating> Rating { get; set; }
         public virtual DbSet<Subject> Subject { get; set; }
 
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("ProductVersion", "2.2.6-servicing-10079");
@@ -102,12 +101,6 @@ namespace liblib_backend.Models
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
-                entity.HasOne(d => d.Account)
-                    .WithMany(p => p.BookLending)
-                    .HasForeignKey(d => d.AccountId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_BookLending_Account");
-
                 entity.HasOne(d => d.Hardbook)
                     .WithMany(p => p.BookLending)
                     .HasForeignKey(d => d.HardbookId)
@@ -134,6 +127,12 @@ namespace liblib_backend.Models
                     .HasForeignKey(d => d.BookId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_BookReservation_Book");
+
+                entity.HasOne(d => d.IdNavigation)
+                    .WithOne(p => p.BookReservation)
+                    .HasForeignKey<BookReservation>(d => d.Id)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_BookReservation_BookLending");
             });
 
             modelBuilder.Entity<BookSubject>(entity =>

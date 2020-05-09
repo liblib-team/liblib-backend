@@ -10,5 +10,7 @@ namespace liblib_backend.Controllers.BookController
         public Guid Id;
 
         public string Name;
+
+        public string Image;
     }
 }

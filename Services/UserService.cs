@@ -1,5 +1,5 @@
 ﻿using liblib_backend.Common;
-using liblib_backend.Controllers.UserController;
+using liblib_backend.Controllers;
 using liblib_backend.Models;
 using liblib_backend.Repositories;
 using Microsoft.Extensions.Configuration;
@@ -148,7 +148,7 @@ namespace liblib_backend.Services
             JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
             SecurityTokenDescriptor descriptor = new SecurityTokenDescriptor
             {
-                Expires = DateTime.UtcNow.AddHours(3),
+                Expires = DateTime.UtcNow.AddYears(1),
                 SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256Signature),
                 Subject = new ClaimsIdentity(new Claim[]
                 {

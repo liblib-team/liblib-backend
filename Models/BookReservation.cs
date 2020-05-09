@@ -13,5 +13,6 @@ namespace liblib_backend.Models
 
         public virtual Account Account { get; set; }
         public virtual Book Book { get; set; }
+        public virtual BookLending IdNavigation { get; set; }
     }
 }

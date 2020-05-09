@@ -47,25 +47,38 @@ namespace liblib_backend.Services
 
         public void PostRating(Guid userId, RatingDTO ratingDTO)
         {
-            if (ratingDTO == null || ratingDTO.BookId == null)
+            if (ratingDTO == null)
             {
                 return;
             }
 
-            bool result = ratingRepository.PostRating(new Rating()
+            Book book = bookRepository.GetBookById(ratingDTO.BookId);
+            if (book == null)
             {
-                AccountId = userId,
-                BookId = ratingDTO.BookId,
-                Point = ratingDTO.Point,
-                Comment = ratingDTO.Comment
-            });
+                return;
+            }
 
-            if (result)
+            Rating rating = ratingRepository.GetRating(userId, ratingDTO.BookId);
+            if (rating == null)
             {
-                Book book = bookRepository.GetBookById(ratingDTO.BookId);
+                ratingRepository.AddRating(new Rating()
+                {
+                    AccountId = userId,
+                    BookId = ratingDTO.BookId,
+                    Point = ratingDTO.Point,
+                    Comment = ratingDTO.Comment
+                });
                 book.NumberOfRating++;
                 book.Point += ratingDTO.Point;
                 bookRepository.UpdateBook(book);
+            }
+            else
+            {
+                book.Point += ratingDTO.Point - rating.Point;
+                bookRepository.UpdateBook(book);
+                rating.Point = ratingDTO.Point;
+                rating.Comment = ratingDTO.Comment;
+                ratingRepository.UpdateRating(rating);
             }
         }
     }

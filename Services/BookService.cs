@@ -6,7 +6,9 @@ using liblib_backend.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 
 namespace liblib_backend.Services
 {
@@ -15,9 +17,10 @@ namespace liblib_backend.Services
         List<BookDTO> ListBooksOrderByRating();
         List<BookDTO> ListBooksOrderByPopular();
         List<BookDTO> ListRelevanceBooks(Guid bookId);
-        List<BookDTO> ListBooksWithSameAuthorId(Guid authorId);
+        List<BookDTO> ListBooksWithSameAuthor(Guid bookId);
         List<BookDTO> ListBooksWithSameSubjectId(Guid subjectId);
         BookDetailDTO GetBookDetail(Guid bookId);
+        PhysicalFileResult GetEbook(string role, Guid bookId);
     }
 
     public class BookService : IBookService
@@ -47,7 +50,8 @@ namespace liblib_backend.Services
                 Authors = authorRepository.ListAuthorsByBookId(x.Id).Select(y => new AuthorDTO()
                 {
                     Id = y.Id,
-                    Name = y.Name
+                    Name = y.Name,
+                    Image = y.Image
                 }).ToList()
             }).ToList();
         }
@@ -63,7 +67,8 @@ namespace liblib_backend.Services
                 Authors = authorRepository.ListAuthorsByBookId(x.Id).Select(y => new AuthorDTO()
                 {
                     Id = y.Id,
-                    Name = y.Name
+                    Name = y.Name,
+                    Image = y.Image
                 }).ToList()
             }).ToList();
         }
@@ -84,7 +89,8 @@ namespace liblib_backend.Services
                     Authors = authorRepository.ListAuthorsByBookId(x.Id).Select(y => new AuthorDTO()
                     {
                         Id = y.Id,
-                        Name = y.Name
+                        Name = y.Name,
+                        Image = y.Image
                     }).ToList()
                 }).ToDictionary(x => x.Id);
             }
@@ -101,7 +107,8 @@ namespace liblib_backend.Services
                     Authors = authorRepository.ListAuthorsByBookId(x.Id).Select(y => new AuthorDTO()
                     {
                         Id = y.Id,
-                        Name = y.Name
+                        Name = y.Name,
+                        Image = y.Image
                     }).ToList()
                 });
                 foreach (BookDTO book in temp)
@@ -112,9 +119,15 @@ namespace liblib_backend.Services
             return dictionary.Values.ToList();
         }
 
-        public List<BookDTO> ListBooksWithSameAuthorId(Guid authorId)
+        public List<BookDTO> ListBooksWithSameAuthor(Guid bookId)
         {
-            return bookRepository.ListBooksWithSameAuthorId(authorId).Select(x => new BookDTO()
+            List<Author> authors = authorRepository.ListAuthorsByBookId(bookId);
+            List<Book> result = new List<Book>();
+            foreach (Author author in authors)
+            {
+                result.AddRange(bookRepository.ListBooksWithSameAuthorId(author.Id));
+            }
+            return result.Select(x => new BookDTO()
             {
                 Id = x.Id,
                 Title = x.Title,
@@ -123,7 +136,8 @@ namespace liblib_backend.Services
                 Authors = authorRepository.ListAuthorsByBookId(x.Id).Select(y => new AuthorDTO()
                 {
                     Id = y.Id,
-                    Name = y.Name
+                    Name = y.Name,
+                    Image = y.Image
                 }).ToList()
             }).ToList();
         }
@@ -139,7 +153,8 @@ namespace liblib_backend.Services
                 Authors = authorRepository.ListAuthorsByBookId(x.Id).Select(y => new AuthorDTO()
                 {
                     Id = y.Id,
-                    Name = y.Name
+                    Name = y.Name,
+                    Image = y.Image
                 }).ToList()
             }).ToList();
         }
@@ -147,14 +162,22 @@ namespace liblib_backend.Services
         public BookDetailDTO GetBookDetail(Guid bookId)
         {
             Book book = bookRepository.GetBookById(bookId);
+            if (book == null)
+            {
+                return null;
+            }
+            book.Views++;
+            bookRepository.UpdateBook(book);
             return new BookDetailDTO()
             {
                 Id = book.Id,
                 Authors = authorRepository.ListAuthorsByBookId(book.Id).Select(x => new AuthorDTO()
                 {
                     Id = x.Id,
-                    Name = x.Name
+                    Name = x.Name,
+                    Image = x.Image
                 }).ToList(),
+                Language = book.Language,
                 Subjects = subjectRepository.ListSubjectsByBookId(book.Id).Select(x => new SubjectDTO()
                 {
                     Id = x.Id,
@@ -162,10 +185,28 @@ namespace liblib_backend.Services
                 }).ToList(),
                 Description = book.Description,
                 Image = book.Image,
-                Point = book.Point,
+                Point = book.NumberOfRating == 0 ? 0 : book.Point / book.NumberOfRating,
                 Title = book.Title,
                 Publisher = publisherRepository.GetPublisherById(book.PublisherId)?.Name
             };
+        }
+
+        public PhysicalFileResult GetEbook(string role, Guid bookId)
+        {
+            Ebook ebook = bookRepository.GetEbook(bookId);
+            if (ebook == null)
+            {
+                throw new FileNotFoundException();
+            }
+            if (!ebook.IsPublic)
+            {
+                if (string.IsNullOrWhiteSpace(role) || role.Equals("Member"))
+                {
+                    throw new UnauthorizedAccessException();
+                }
+            }
+            string path = Path.Combine(Directory.GetCurrentDirectory(), "Ebook", ebook.Location);
+            return new PhysicalFileResult(path, "application/pdf");
         }
     }
 }

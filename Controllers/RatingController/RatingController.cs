@@ -29,9 +29,14 @@ namespace liblib_backend.Controllers.RatingController
         [Authorize]
         [Route("post")]
         [HttpPost]
-        public void PostRating([FromBody] RatingDTO ratingDTO)
+        public ResultDTO PostRating([FromBody] RatingDTO ratingDTO)
         {
             ratingService.PostRating(Guid.Parse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)), ratingDTO);
+            return new ResultDTO()
+            {
+                Success = true,
+                Message = ""
+            };
         }
     }
 }
