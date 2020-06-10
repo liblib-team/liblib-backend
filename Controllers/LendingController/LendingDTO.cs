@@ -15,5 +15,7 @@ namespace liblib_backend.Controllers.LendingController
         
         public int DueDate;
 
+        public string Status;
+
     }
 }

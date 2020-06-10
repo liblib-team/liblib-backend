@@ -63,11 +63,19 @@ namespace liblib_backend.Controllers.BookController
             return bookService.GetBookDetail(bookId);
         }
 
+        [Route("search")]
+        [HttpPost]
+        public List<BookDTO> SearchBook([FromBody] string name)
+        {
+            return bookService.ListBooksContainName(name);
+        }
+
+
         [Authorize]
         [AllowAnonymous]
         [Route("read/{bookId}")]
         [HttpGet]
-        public PhysicalFileResult ReadEbook(Guid bookId)
+        public IActionResult ReadEbook(Guid bookId)
         {
             string role = HttpContext.User.FindFirstValue(ClaimTypes.Role);
             return bookService.GetEbook(role, bookId);

@@ -19,8 +19,9 @@ namespace liblib_backend.Services
         List<BookDTO> ListRelevanceBooks(Guid bookId);
         List<BookDTO> ListBooksWithSameAuthor(Guid bookId);
         List<BookDTO> ListBooksWithSameSubjectId(Guid subjectId);
+        List<BookDTO> ListBooksContainName(string name);
         BookDetailDTO GetBookDetail(Guid bookId);
-        PhysicalFileResult GetEbook(string role, Guid bookId);
+        IActionResult GetEbook(string role, Guid bookId);
     }
 
     public class BookService : IBookService
@@ -185,28 +186,49 @@ namespace liblib_backend.Services
                 }).ToList(),
                 Description = book.Description,
                 Image = book.Image,
-                Point = book.NumberOfRating == 0 ? 0 : book.Point / book.NumberOfRating,
+                Point = book.NumberOfRating == 0 ? 0 : Math.Round(book.Point / book.NumberOfRating, 1),
                 Title = book.Title,
                 Publisher = publisherRepository.GetPublisherById(book.PublisherId)?.Name
             };
         }
 
-        public PhysicalFileResult GetEbook(string role, Guid bookId)
+        public IActionResult GetEbook(string role, Guid bookId)
         {
             Ebook ebook = bookRepository.GetEbook(bookId);
             if (ebook == null)
             {
-                throw new FileNotFoundException();
+                return new NotFoundResult();
             }
             if (!ebook.IsPublic)
             {
                 if (string.IsNullOrWhiteSpace(role) || role.Equals("Member"))
                 {
-                    throw new UnauthorizedAccessException();
+                    return new UnauthorizedResult();
                 }
             }
             string path = Path.Combine(Directory.GetCurrentDirectory(), "Ebook", ebook.Location);
-            return new PhysicalFileResult(path, "application/pdf");
+            if (File.Exists(path))
+            {
+                return new PhysicalFileResult(path, "application/pdf");
+            }
+            return new NotFoundResult();
+        }
+
+        public List<BookDTO> ListBooksContainName(string name)
+        {
+            return bookRepository.ListBooksContainName(name).Select(x => new BookDTO()
+            {
+                Id = x.Id,
+                Title = x.Title,
+                Image = x.Image,
+                Description = x.Description,
+                Authors = authorRepository.ListAuthorsByBookId(x.Id).Select(y => new AuthorDTO()
+                {
+                    Id = y.Id,
+                    Name = y.Name,
+                    Image = y.Image
+                }).ToList()
+            }).ToList();
         }
     }
 }

@@ -13,6 +13,7 @@ namespace liblib_backend.Repositories
         Account GetAccountWithUsername(string username);
         Account GetAccountWithId(Guid accountId);
         bool CreateAccount(Account account);
+        bool UpdateAccount(Account account);
     }
 
     public class UserRepository : IUserRepository
@@ -48,5 +49,18 @@ namespace liblib_backend.Repositories
            return DbContext.Account.FirstOrDefault(x => x.Username == username);
         }
 
+        public bool UpdateAccount(Account account)
+        {
+            try
+            {
+                DbContext.Account.Update(account);
+                DbContext.SaveChanges();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
     }
 }

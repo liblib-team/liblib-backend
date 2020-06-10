@@ -106,6 +106,12 @@ namespace liblib_backend.Models
                     .HasForeignKey(d => d.HardbookId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_BookLending_Hardbook");
+
+                entity.HasOne(d => d.IdNavigation)
+                    .WithOne(p => p.BookLending)
+                    .HasForeignKey<BookLending>(d => d.Id)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_BookLending_BookReservation");
             });
 
             modelBuilder.Entity<BookReservation>(entity =>
@@ -127,12 +133,6 @@ namespace liblib_backend.Models
                     .HasForeignKey(d => d.BookId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_BookReservation_Book");
-
-                entity.HasOne(d => d.IdNavigation)
-                    .WithOne(p => p.BookReservation)
-                    .HasForeignKey<BookReservation>(d => d.Id)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_BookReservation_BookLending");
             });
 
             modelBuilder.Entity<BookSubject>(entity =>

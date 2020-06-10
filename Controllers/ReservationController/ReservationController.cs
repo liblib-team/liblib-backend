@@ -44,9 +44,16 @@ namespace liblib_backend.Controllers.ReservationController
             return reservationService.ListReservations(accountId);
         }
 
+        [Authorize]
+        [Route("list/{status}")]
+        [HttpGet]
+        public List<ReservationDTO> ListReservations(string status)
+        {
+            return reservationService.ListReservationsWithStatus(Guid.Parse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)), status.Split(','));
+        }
 
         [Authorize]
-        [Route("cancel/{ReservationId")]
+        [Route("cancel/{ReservationId}")]
         [HttpPost]
         public ResultDTO CancelReservation(Guid reservationId) 
         {

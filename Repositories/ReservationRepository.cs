@@ -14,7 +14,7 @@ namespace liblib_backend.Repositories
         List<BookReservation> ListReservationsByBookIdWithStatus(Guid bookId, params string[] status);
         List<BookReservation> ListReservationsByAccountId(Guid accountId);
         List<BookReservation> ListReservationsByAccountIdWithStatus(Guid accountId, params string[] status);
-        bool AddReservation(BookReservation reservation);
+        bool CreateReservation(BookReservation reservation);
         void UpdateReservations(params BookReservation[] reservation);
         int CountReservationWithStatus(Guid bookId, string status);
     }
@@ -28,18 +28,19 @@ namespace liblib_backend.Repositories
             this.DbContext = DbContext;
         }
 
-        public bool AddReservation(BookReservation reservation)
+        public bool CreateReservation(BookReservation reservation)
         {
             try
             {
                 DbContext.BookReservation.Add(reservation);
                 DbContext.SaveChanges();
                 return true;
-            } 
+            }
             catch (Exception)
             {
                 return false;
             }
+           
         }
 
         public int CountReservationWithStatus(Guid bookId, string status)

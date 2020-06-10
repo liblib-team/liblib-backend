@@ -14,6 +14,7 @@ namespace liblib_backend.Services
     {
         ResultDTO CreateReservation(Guid accountId, Guid bookId);
         List<ReservationDTO> ListReservations(Guid accountId);
+        List<ReservationDTO> ListReservationsWithStatus(Guid accountId, params string[] status);
         ResultDTO CancelReservation(Guid accountId, Guid reservationId);
     }
 
@@ -38,13 +39,13 @@ namespace liblib_backend.Services
 
         public List<ReservationDTO> ListReservations(Guid accountId)
         {
-            List<BookReservation> reservations = reservationRepository.ListReservationsByAccountId(accountId);
+            List<BookReservation> reservations = reservationRepository.ListReservationsByAccountIdWithStatus(accountId, "Pending");
             foreach (BookReservation reservation in reservations)
             {
                 UpdateReservation(reservation.BookId);
             }
 
-            reservations = reservationRepository.ListReservationsByAccountId(accountId);
+            reservations = reservationRepository.ListReservationsByAccountIdWithStatus(accountId, "Pending", "Rejected", "Cancelled");
             List<ReservationDTO> result = new List<ReservationDTO>();
             foreach (BookReservation reservation in reservations)
             {
@@ -55,12 +56,12 @@ namespace liblib_backend.Services
                     BookId = reservation.BookId,
                     ReservationDate = reservation.ReservationDate,
                     Image = book.Image,
-                    Status = reservation.Status,
+                    Status = Utility.TranslateStatusToVI(reservation.Status),
                     Title = book.Title
                 });
             }
-           
-            return result;
+
+            return result.OrderBy(x => x.ReservationDate).ToList();
         }
 
         public ResultDTO CreateReservation(Guid accountId, Guid bookId)
@@ -93,7 +94,7 @@ namespace liblib_backend.Services
                 reservation.Status = "Pending";
             }
 
-            if (reservationRepository.AddReservation(reservation))
+            if (reservationRepository.CreateReservation(reservation))
             {
                 // Auto accept
                 if (reservation.Status.Equals("Accepted"))
@@ -101,7 +102,7 @@ namespace liblib_backend.Services
                     return lendingService.AssignHardbook(accountId, bookRepository.ListAvailableHardbooks(bookId).FirstOrDefault().Barcode);
                 }
 
-                return new ResultDTO
+                return new ResultDTO()
                 {
                     Success = true,
                     Message = "Đặt sách thành công"
@@ -109,7 +110,7 @@ namespace liblib_backend.Services
             } 
             else
             {
-                return new ResultDTO
+                return new ResultDTO()
                 {
                     Success = false,
                     Message = "Lỗi hệ thống"
@@ -121,20 +122,23 @@ namespace liblib_backend.Services
         {
             int limit = 24 * 60 * 60;
             List<BookReservation> acceptedReservations = reservationRepository.ListReservationsByBookIdWithStatus(bookId, "Accepted");
-            List<BookReservation> pendingReservations = reservationRepository.ListReservationsByBookIdWithStatus(bookId, "Pending");
             foreach (BookReservation reservation in acceptedReservations)
             {
                 if (reservation.ReservationDate + limit > DateTimeOffset.UtcNow.ToUnixTimeSeconds())
                 {
                     reservation.Status = "Rejected";
                     reservationRepository.UpdateReservations(reservation);
-                    if (pendingReservations.Count != 0)
-                    {
-                        pendingReservations[0].Status = "Accepted";
-                        reservationRepository.UpdateReservations(pendingReservations[0]);
-                        pendingReservations.RemoveAt(0);
-                    }
                 }
+            }
+
+            List<BookReservation> pendingReservations = reservationRepository.ListReservationsByBookIdWithStatus(bookId, "Pending");
+            int availableHardbook = bookRepository.CountAvalableHardbook(bookId);
+            while (availableHardbook-- > 0 && pendingReservations.Count != 0)
+            {
+                pendingReservations[0].Status = "Accepted";
+                lendingService.AssignHardbook(pendingReservations[0].AccountId, bookRepository.ListAvailableHardbooks(bookId).FirstOrDefault().Barcode);
+                reservationRepository.UpdateReservations(pendingReservations[0]);
+                pendingReservations.RemoveAt(0);
             }
 
             List<BookReservation> borrowingReservations = reservationRepository.ListReservationsByBookIdWithStatus(bookId, "Borrowing");
@@ -209,6 +213,33 @@ namespace liblib_backend.Services
                     Message = "Không thể hủy yêu cầu đã nhận"
                 };
             }            
+        }
+
+        public List<ReservationDTO> ListReservationsWithStatus(Guid accountId, params string[] status)
+        {
+            List<BookReservation> reservations = reservationRepository.ListReservationsByAccountIdWithStatus(accountId, "Pending");
+            foreach (BookReservation reservation in reservations)
+            {
+                UpdateReservation(reservation.BookId);
+            }
+
+            reservations = reservationRepository.ListReservationsByAccountIdWithStatus(accountId, status);
+            List<ReservationDTO> result = new List<ReservationDTO>();
+            foreach (BookReservation reservation in reservations)
+            {
+                Book book = bookRepository.GetBookById(reservation.BookId);
+                result.Add(new ReservationDTO()
+                {
+                    Id = reservation.Id,
+                    BookId = reservation.BookId,
+                    ReservationDate = reservation.ReservationDate,
+                    Image = book.Image,
+                    Status = Utility.TranslateStatusToVI(reservation.Status),
+                    Title = book.Title
+                });
+            }
+
+            return result.OrderBy(x => x.ReservationDate).ToList();
         }
     }
 }

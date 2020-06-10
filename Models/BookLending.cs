@@ -12,6 +12,6 @@ namespace liblib_backend.Models
         public int? ReturnDate { get; set; }
 
         public virtual Hardbook Hardbook { get; set; }
-        public virtual BookReservation BookReservation { get; set; }
+        public virtual BookReservation IdNavigation { get; set; }
     }
 }

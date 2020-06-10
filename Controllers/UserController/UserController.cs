@@ -1,8 +1,10 @@
 ﻿using liblib_backend.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -47,6 +49,28 @@ namespace liblib_backend.Controllers.UserController
         {
             return userService.Create(user.Username, user.Password);
         }
-        
+
+        [Authorize]
+        [Route("detail")]
+        [HttpGet]
+        public UserDetailDTO Detail()
+        {
+            return userService.Detail(Guid.Parse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)));
+        }
+
+        [Authorize]
+        [Route("upload")]
+        [HttpPost]
+        public ResultDTO UploadImage(IFormFile image)
+        {
+            return userService.UploadImage(Guid.Parse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)), image);
+        }
+
+        [Route("image/{name}")]
+        [HttpGet]
+        public IActionResult GetImage(string name)
+        {
+            return userService.GetImage(name);
+        }
     }
 }

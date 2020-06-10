@@ -3,6 +3,7 @@ using liblib_backend.Models;
 using liblib_backend.Services;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,6 +15,7 @@ namespace liblib_backend.Repositories
         List<Book> ListBooksOrderByPopular();
         List<Book> ListBooksWithSameSubjectId(Guid subjectId);
         List<Book> ListBooksWithSameAuthorId(Guid authorId);
+        List<Book> ListBooksContainName(string name);
         Book GetBookById(Guid bookId);
         void UpdateBook(Book book);
         Ebook GetEbook(Guid bookId);
@@ -108,6 +110,11 @@ namespace liblib_backend.Repositories
             {
 
             }
+        }
+
+        public List<Book> ListBooksContainName(string name)
+        {
+            return DbContext.Book.Where(x => Utility.Contains(x.Title, name)).ToList();
         }
     }
 }

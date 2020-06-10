@@ -95,7 +95,8 @@ namespace liblib_backend.Services
                     DueDate = x.DueDate,
                     BookId = book.Id,
                     Image = book.Image,
-                    Title = book.Title
+                    Title = book.Title,
+                    Status = Utility.TranslateStatusToVI(reservation.Status)
                 };
             }).ToList();
         }

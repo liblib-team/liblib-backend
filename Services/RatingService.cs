@@ -1,4 +1,5 @@
 ﻿using liblib_backend.Common;
+using liblib_backend.Controllers;
 using liblib_backend.Controllers.RatingController;
 using liblib_backend.Models;
 using liblib_backend.Repositories;
@@ -12,7 +13,7 @@ namespace liblib_backend.Services
     public interface IRatingService : ITransientService
     {
         List<PostedRatingDTO> ListRatingsByBookId(Guid bookId);
-        void PostRating(Guid userId, RatingDTO ratingDTO);
+        ResultDTO PostRating(Guid userId, RatingDTO ratingDTO);
     }
 
     public class RatingService : IRatingService
@@ -45,17 +46,25 @@ namespace liblib_backend.Services
             }).ToList();
         }
 
-        public void PostRating(Guid userId, RatingDTO ratingDTO)
+        public ResultDTO PostRating(Guid userId, RatingDTO ratingDTO)
         {
             if (ratingDTO == null)
             {
-                return;
+                return new ResultDTO()
+                {
+                    Success = false,
+                    Message = "Lỗi yêu cầu"
+                };
             }
 
             Book book = bookRepository.GetBookById(ratingDTO.BookId);
             if (book == null)
             {
-                return;
+                return new ResultDTO()
+                {
+                    Success = false,
+                    Message = "Sách không tồn tại"
+                };
             }
 
             Rating rating = ratingRepository.GetRating(userId, ratingDTO.BookId);
@@ -80,6 +89,11 @@ namespace liblib_backend.Services
                 rating.Comment = ratingDTO.Comment;
                 ratingRepository.UpdateRating(rating);
             }
+            return new ResultDTO()
+            {
+                Success = true,
+                Message = ""
+            };
         }
     }
 }
