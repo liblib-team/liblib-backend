@@ -20,10 +20,10 @@ namespace liblib_backend.Services
     {
 
         private IRatingRepository ratingRepository;
-        private IUserRepository userRepository;
+        private IAccountRepository userRepository;
         private IBookRepository bookRepository;
 
-        public RatingService(IRatingRepository ratingRepository, IUserRepository userRepository, IBookRepository bookRepository)
+        public RatingService(IRatingRepository ratingRepository, IAccountRepository userRepository, IBookRepository bookRepository)
         {
             this.ratingRepository = ratingRepository;
             this.userRepository = userRepository;

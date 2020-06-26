@@ -24,11 +24,11 @@ namespace liblib_backend.Services
         private IReservationRepository reservationRepository;
         private ILendingRepository lendingRepository;
         private IBookRepository bookRepository;
-        private IUserRepository userRepository;
+        private IAccountRepository userRepository;
 
         private ILendingService lendingService;
 
-        public ReservationService(IReservationRepository reservationRepository, ILendingRepository lendingRepository, IBookRepository bookRepository, IUserRepository userRepository, ILendingService lendingService)
+        public ReservationService(IReservationRepository reservationRepository, ILendingRepository lendingRepository, IBookRepository bookRepository, IAccountRepository userRepository, ILendingService lendingService)
         {
             this.reservationRepository = reservationRepository;
             this.lendingRepository = lendingRepository;
